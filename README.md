@@ -16,14 +16,10 @@ Hacked this together in a couple hours, so PRs or suggestions are welcome.
 - python-levenshtein
 - libnotify
 - yubikey-manager (ykman)
-- xclip
-- xdotool
+- wl-clipboard
+- ydotool
 
 ## Installation
-
-Available on the [AUR](https://aur.archlinux.org/packages/yubioath-krunner).
-
-Or, on anything else:
 
 ```bash
 ./install.sh
@@ -38,8 +34,6 @@ The code can also be typed automatically in the active window by setting `type: 
 You can also set a prefix word in the configuration file, used to trigger YubiOATH search. This can be useful if you don't want to clutter the krunner menu.
 
 **Hot tip:** If you've added a new account, just copy a code from any account to refresh the credential list.
-
-**Wayland users:** If you are using Wayland, this script probably won't work because it requires xclip and xdotool.
 
 ## Configuration file
 

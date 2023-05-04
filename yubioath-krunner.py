@@ -33,6 +33,7 @@ class Runner(dbus.service.Object):
         ]
 
     def get_code(self, cred_id):
+        subprocess.run(["notify-send", "--urgency=low", "--expire-time=2000", "--icon=nm-vpn-active-lock", "YubiOATH", "Please touch your Yubikey..."])
         result = subprocess.run(["ykman", "oath", "accounts", "code", cred_id], stdout=subprocess.PIPE)
         code = result.stdout.decode()
         return re.search(" (\d+)$", code).groups()[0]
@@ -63,10 +64,10 @@ class Runner(dbus.service.Object):
     def Run(self, matchId, actionId):
         code = self.get_code(matchId)
         if self.options.copy:
-            subprocess.run("echo -n '{}' | xclip -selection clipboard".format(code), shell=True)
+            subprocess.run(f"wl-copy {code}", shell=True)
             subprocess.run(["notify-send", "--urgency=low", "--expire-time=2000", "--icon=nm-vpn-active-lock", "YubiOATH", "Code copied to clipboard!"])
         if self.options.type:
-            subprocess.run(f"xdotool type {code}", shell=True)
+            subprocess.run(f"ydotool type {code}", shell=True)
             subprocess.run(["notify-send", "--urgency=low", "--expire-time=2000", "--icon=nm-vpn-active-lock", "YubiOATH", "Code typed!"])
         # Refresh credentials.
         self.credentials = self.get_credentials()
