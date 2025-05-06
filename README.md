@@ -14,8 +14,7 @@ Hacked this together in a couple hours, so PRs or suggestions are welcome.
 - python-configargparse
 - python-dbus
 - python-thefuzz
-- python-gobject
-- python-levenshtein
+- python-pygobject
 - libnotify
 - yubikey-manager (ykman)
 - wl-clipboard
