@@ -2,6 +2,8 @@
 
 Displays your YubiKey OATH credentials in krunner when you search for them. Hit enter (or click) to copy the code.
 
+This is a fork of (yubioath-krunner)[https://github.com/odensc/yubioath-krunner] that is tweaked to work with Wayland.
+
 Hacked this together in a couple hours, so PRs or suggestions are welcome.
 
 ![](https://i.imgur.com/wrrZR4T.gif)
@@ -11,7 +13,7 @@ Hacked this together in a couple hours, so PRs or suggestions are welcome.
 - python (3)
 - python-configargparse
 - python-dbus
-- python-fuzzywuzzy
+- python-thefuzz
 - python-gobject
 - python-levenshtein
 - libnotify

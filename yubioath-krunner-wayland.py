@@ -1,0 +1,86 @@
+#!/bin/env python3
+from gi.repository import GLib
+import dbus.service
+import re
+# Switched to thefuzz for better performance in more recent versions
+from thefuzz import process
+import subprocess
+from dbus.mainloop.glib import DBusGMainLoop
+import configargparse
+
+APP_NAME = "yubioath-krunner-wayland"
+CONFIG_FILE_NAME = "config"
+
+DBusGMainLoop(set_as_default=True)
+
+objpath="/yubioath"
+
+iface="org.kde.krunner1"
+class Runner(dbus.service.Object):
+    def __init__(self, options):
+        self.options = options
+        self.credentials = self.get_credentials()
+        dbus.service.Object.__init__(self, dbus.service.BusName("com.github.elihopk.yubioath", dbus.SessionBus()), objpath)
+
+    def get_credentials(self):
+        result = subprocess.run(["ykman", "oath", "accounts", "list"], stdout=subprocess.PIPE)
+        return [
+            {
+                "id": cred,
+                "issuer": ":" in cred and cred.split(":")[0] or "",
+                "account_name": ":" in cred and cred.split(":")[1] or cred
+            }
+            for cred in result.stdout.decode().split("\n")[:-1]
+        ]
+
+    def get_code(self, cred_id):
+        subprocess.run(["notify-send", "--urgency=low", "--expire-time=2000", "--icon=nm-vpn-active-lock", "YubiOATH", "Please touch your Yubikey..."])
+        result = subprocess.run(["ykman", "oath", "accounts", "code", cred_id], stdout=subprocess.PIPE)
+        code = result.stdout.decode()
+        return re.search(r" (\d+)$", code).groups()[0]
+
+    @dbus.service.method(iface, out_signature='a(sss)')
+    def Actions(self, msg):
+        return []
+
+    @dbus.service.method(iface, in_signature='s', out_signature='a(sssida{sv})')
+    def Match(self, query):
+        if query[0:len(self.options.prefix)] == self.options.prefix:
+            query = query[len(options.prefix):]
+        else:
+            return []
+
+        fuzzy_credentials = process.extract(query, [cred["id"] for cred in self.credentials], limit=3)
+        results = []
+
+        for y in fuzzy_credentials:
+            cred = next(x for x in self.credentials if x["id"] == y[0])
+            # Best guess for icon. (todo)
+            icon = "nm-vpn-active-lock"
+            results.append((cred["id"], cred["issuer"], icon, 100, y[1] / 100, { "subtext": cred["account_name"] }))
+
+        return results
+
+    @dbus.service.method(iface, in_signature='ss')
+    def Run(self, matchId, actionId):
+        code = self.get_code(matchId)
+        if self.options.copy:
+            subprocess.run(f"wl-copy {code}", shell=True)
+            subprocess.run(["notify-send", "--urgency=low", "--expire-time=2000", "--icon=nm-vpn-active-lock", "YubiOATH", "Code copied to clipboard!"])
+        if self.options.type:
+            subprocess.run(f"ydotool type {code}", shell=True)
+            subprocess.run(["notify-send", "--urgency=low", "--expire-time=2000", "--icon=nm-vpn-active-lock", "YubiOATH", "Code typed!"])
+        # Refresh credentials.
+        self.credentials = self.get_credentials()
+
+        return
+
+config = configargparse.ArgParser(default_config_files=[f'/etc/{APP_NAME}/{CONFIG_FILE_NAME}', f'./{CONFIG_FILE_NAME}', f'~/.config/{APP_NAME}/{CONFIG_FILE_NAME}'])
+config.add('--prefix', default="", help='Prefix used to search in krunner')
+config.add('--copy', action='store_true', help='Copy code to clipboard')
+config.add('--type', action='store_true', help='Type code in active window')
+options = config.parse_args()
+
+runner = Runner(options)
+loop = GLib.MainLoop()
+loop.run()

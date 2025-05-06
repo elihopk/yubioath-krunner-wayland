@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=YubiOATH (Wayland Fork)
+Comment=Yubico Authenticator KRunner plugin
+X-KDE-ServiceTypes=Plasma/Runner
+Type=Service
+Icon=internet-web-browser
+X-KDE-PluginInfo-Author=Eli Hopkins (Fork Maintainer)
+X-KDE-PluginInfo-Email=elihopk44@gmail.com
+# Original Author Oden S. <hello@odensc.me>
+X-KDE-PluginInfo-Name=yubioath-krunner-wayland
+X-KDE-PluginInfo-Version=1.0.2
+X-KDE-PluginInfo-License=LGPL
+X-KDE-PluginInfo-EnabledByDefault=true
+X-KDE-PluginInfo-Website=https://github.com/elihopk/yubioath-krunner-wayland
+X-Plasma-API=DBus
+X-Plasma-DBusRunner-Service=com.github.elihopk.yubioath
+X-Plasma-DBusRunner-Path=/yubioath
